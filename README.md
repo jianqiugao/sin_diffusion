@@ -1,1 +1,3 @@
 # sin_diffusion
+用扩散模型训练正弦函数
+采样方法主要用ddpm和ddim两种
