@@ -6,11 +6,11 @@
 # @email: 985040320@qq.com
 import torch
 import matplotlib.pyplot as plt
-from diffusion_model import Net
+from diffusion_model import Net,att_net
 
 if __name__ == '__main__':
     device = torch.device('cuda:0')
-    # torch.manual_seed(0)
+    torch.manual_seed(0)
     time_step = 1000
     beta = torch.linspace(0.0001, 0.002, time_step).to(device)
     alpha_t = 1 - beta
@@ -23,8 +23,8 @@ if __name__ == '__main__':
 
     x_len = 128
     time_dim = x_len
-    c = torch.tensor([[0.0193,  0.0113]]).to(device)
-    model = Net([x_len,256,512,1024,2048,4096], time_dim, steps=time_step).to(device)
+    c = torch.tensor([[0.5193,  0.0113]]).to(device)
+    model = att_net([x_len,256,512,512,256,256], time_dim, steps=time_step).to(device)
     model.load_state_dict(torch.load('model.pt'))
 
     alphas_cum_prev = torch.cat((torch.tensor([1.0]).to(device), alpha_t_hat[:-1]), 0).to(device)
@@ -35,7 +35,11 @@ if __name__ == '__main__':
     xt = torch.randn(1, time_dim).to(device)
     print(xt.mean().item(),xt.var().item())
     axes[0].plot(xt.detach().cpu().reshape(-1))
-    axes[2].plot(xt.detach().cpu().reshape(-1))
+    axes[0].set_title('noise')
+    base_x = torch.linspace(-5, 5, x_len).to(device)
+    samples = torch.sin(base_x * c[:,0] + c[:,1])
+    axes[2].plot(samples.detach().cpu().reshape(-1))
+
 
     for i in reversed(range(time_step)):
         if i > 1:
@@ -51,5 +55,6 @@ if __name__ == '__main__':
 
     print(xt.mean().item(),xt.var().item())
     axes[1].plot(xt.detach().cpu().reshape(-1))
+    axes[1].set_title('predict')
     axes[2].plot(xt.detach().cpu().reshape(-1))
     plt.show()

@@ -35,7 +35,7 @@ class sindata(Dataset):
 
 
 if __name__ == '__main__':
-    from diffusion_model import Net
+    from diffusion_model import Net,att_net
     torch.manual_seed(0)
     device = torch.device('cuda:0')
     time_step = 1000
@@ -49,8 +49,8 @@ if __name__ == '__main__':
     x_len = 128
     time_dim = x_len
     dataset = sindata(num_sample, x_len)
-    loader = DataLoader(dataset=dataset, shuffle=True, batch_size=2048)
-    model = Net([x_len,256,512,1024,2048,4096], time_dim, steps=time_step).to(device)
+    loader = DataLoader(dataset=dataset, shuffle=True, batch_size=512)
+    model = att_net([x_len,256,512,512,256,256], time_dim, steps=time_step).to(device)
     # model.load_state_dict(torch.load('model.pt'))
     optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
     # scheduler = StepLR(optimizer,step_size=8, gamma=0.9, verbose=True)
