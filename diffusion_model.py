@@ -149,24 +149,18 @@ class att_net(nn.Module):
     def __init__(self,embed_dim_list,time_dim,steps):
         super().__init__()
         self.embed_dim_list = embed_dim_list
-        self.time_dim = time_dim
+        self.time_dim = 256
         # self.embed_t = torch.nn.Embedding(steps, self.time_dim)
-        self.embed_t = torch.nn.Sequential(nn.Linear(1,time_dim),
-                                           nn.LeakyReLU(),
-                                           nn.Linear(time_dim,time_dim))
-        self.embed_c = torch.nn.Sequential(nn.Linear(2,time_dim),
-                                           nn.LeakyReLU(),
-                                           nn.Linear(time_dim,time_dim))
-        self.embed_x = torch.nn.Sequential(nn.Linear(1,time_dim),
-                                           nn.LeakyReLU(),
-                                           nn.Linear(time_dim,time_dim))
+        self.embed_t = torch.nn.Sequential(nn.Linear(1,time_dim))
+        self.embed_c = torch.nn.Sequential(nn.Linear(2,time_dim))
+        self.embed_x = torch.nn.Sequential(nn.Linear(1,time_dim))
         self.output = torch.nn.Sequential(nn.Linear(time_dim,time_dim),
                                           nn.ReLU(),
                                           nn.Linear(time_dim, 64),
                                           nn.Linear(64,1,bias=False))
         self.encoder_decoder = nn.Sequential()
-        for i in range(len(self.embed_dim_list)//2):
-            self.encoder_decoder.append(att_trans(embed_dim_list[0]))
+        for i in range(len(self.embed_dim_list)):
+            self.encoder_decoder.append(att_trans(time_dim))
 
     def forward(self,x, t, c):
         t = (t.reshape(-1, 1) + 1.) / 1000. # 是一个时间

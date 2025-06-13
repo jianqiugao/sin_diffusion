@@ -14,8 +14,8 @@ class sindata(Dataset):
         self.num_sample = num_sample
         self.sample_dim = x_len
         self.base_x = torch.linspace(-5,5,self.sample_dim)
-        self.freq = torch.linspace(-2*torch.pi,torch.pi,self.num_sample).reshape(-1,1)
-        self.phase = torch.linspace(-2 * torch.pi, torch.pi, self.num_sample).reshape(-1, 1)  # phase
+        self.freq = torch.linspace(-torch.pi, torch.pi,self.num_sample).reshape(-1,1)
+        self.phase = torch.linspace(-torch.pi, torch.pi, self.num_sample).reshape(-1, 1)  # phase
 
     def get_samples(self,):  # 做n个随机的正弦曲线
         # freq = torch.randn(self.num_sample).reshape(-1,1)  # freq
@@ -60,7 +60,7 @@ if __name__ == '__main__':
     optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
     # scheduler = StepLR(optimizer,step_size=8, gamma=0.9, verbose=True)
     scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min', factor=0.9, patience=10, min_lr=5e-5)
-    epoches = 5000
+    epoches = 2000
     loss_on_epochs = []
     loss_on = None
     with tqdm(range(epoches)) as tq:

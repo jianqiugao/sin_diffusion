@@ -24,7 +24,7 @@ if __name__ == '__main__':
     x_len = 128
     time_dim = x_len
     c = torch.tensor([[0.5193,  0.0113]]).to(device)
-    model = att_net([x_len,256,512,512,256,256], time_dim, steps=time_step).to(device)
+    model = att_net([128,512,512,256,256], time_dim, steps=time_step).to(device)
     model.load_state_dict(torch.load('model.pt'))
 
     alphas_cum_prev = torch.cat((torch.tensor([1.0]).to(device), alpha_t_hat[:-1]), 0).to(device)
