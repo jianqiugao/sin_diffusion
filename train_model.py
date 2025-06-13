@@ -14,11 +14,13 @@ class sindata(Dataset):
         self.num_sample = num_sample
         self.sample_dim = x_len
         self.base_x = torch.linspace(-5,5,self.sample_dim)
-        self.samples = self.get_samples()
+        self.freq = torch.linspace(-2*torch.pi,torch.pi,self.num_sample).reshape(-1,1)
+        self.phase = torch.linspace(-2 * torch.pi, torch.pi, self.num_sample).reshape(-1, 1)  # phase
 
     def get_samples(self,):  # 做n个随机的正弦曲线
-        freq = torch.randn(self.num_sample).reshape(-1,1)  # freq
-        phase = torch.randn(self.num_sample).reshape(-1,1) # phase
+        # freq = torch.randn(self.num_sample).reshape(-1,1)  # freq
+        freq = torch.linspace(-torch.pi,torch.pi,self.num_sample).reshape(-1,1)
+        phase = torch.linspace(-torch.pi,torch.pi,self.num_sample).reshape(-1,1) # phase
         samples = torch.sin(self.base_x*freq + phase)
         return torch.concat([samples, freq, phase], dim=-1)
 
@@ -28,7 +30,10 @@ class sindata(Dataset):
         plt.show()
 
     def __getitem__(self, item):
-        return self.samples[item]
+        freq = torch.randint(0,self.num_sample,(1,))[0]
+        phase = torch.randint(0,self.num_sample,(1,))[0]
+        samples = torch.sin(self.base_x * self.freq[freq] + self.phase[phase])
+        return torch.concat([samples, self.freq[freq], self.phase[phase]], dim=-1)
 
     def __len__(self):
         return self.num_sample
@@ -45,12 +50,12 @@ if __name__ == '__main__':
     alpha_t_hat_s = (torch.sqrt(alpha_t_hat)).to(device=device)
     one_minus_alpha_t_sqrt = torch.sqrt(1 - alpha_t_hat).to(device=device)
 
-    num_sample = 30000
+    num_sample = 80000
     x_len = 128
     time_dim = x_len
     dataset = sindata(num_sample, x_len)
-    loader = DataLoader(dataset=dataset, shuffle=True, batch_size=512)
-    model = att_net([x_len,256,512,512,256,256], time_dim, steps=time_step).to(device)
+    loader = DataLoader(dataset=dataset, shuffle=True, batch_size=600)
+    model = att_net([128,512,512,256,256], time_dim, steps=time_step).to(device)
     # model.load_state_dict(torch.load('model.pt'))
     optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
     # scheduler = StepLR(optimizer,step_size=8, gamma=0.9, verbose=True)

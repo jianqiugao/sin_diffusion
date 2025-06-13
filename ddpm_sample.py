@@ -31,30 +31,31 @@ if __name__ == '__main__':
     posterior_variance = (beta * (1 - alphas_cum_prev) / (1 - alpha_t_hat)).to(device)
 
     fig, axes = plt.subplots(3, 1)
+    num_sample = 5
 
-    xt = torch.randn(1, time_dim).to(device)
+    xt = torch.randn(num_sample, time_dim).to(device)
     print(xt.mean().item(),xt.var().item())
     axes[0].plot(xt.detach().cpu().reshape(-1))
     axes[0].set_title('noise')
     base_x = torch.linspace(-5, 5, x_len).to(device)
     samples = torch.sin(base_x * c[:,0] + c[:,1])
     axes[2].plot(samples.detach().cpu().reshape(-1))
+    with torch.no_grad():
+        for i in reversed(range(time_step)):
+            if i > 1:
+                zt = torch.randn(num_sample, time_dim).to(device)
+            else:
+                zt = torch.zeros(num_sample, time_dim).to(device)
 
+            coeff_1 =(1. / torch.sqrt(alpha_t[i]))
 
-    for i in reversed(range(time_step)):
-        if i > 1:
-            zt = torch.randn(1, time_dim).to(device)
-        else:
-            zt = torch.zeros(1, time_dim).to(device)
+            eps = model(xt, torch.tensor([i]*num_sample).to(device), c.repeat_interleave(num_sample,0))
+            eps_ = (1 - alpha_t[i]) / (one_minus_alpha_t_sqrt[i])
+            xt = coeff_1 * (xt - eps*eps_) #+ torch.sqrt(beta[i]) * zt # 这里方差部分的影响很小
 
-        coeff_1 =(1. / torch.sqrt(alpha_t[i]))
-
-        eps = model(xt, torch.tensor([i]).to(device), c)
-        eps_ = (1 - alpha_t[i]) / (one_minus_alpha_t_sqrt[i])
-        xt = coeff_1 * (xt - eps*eps_) #+ torch.sqrt(beta[i]) * zt # 这里方差部分的影响很小
-
-    print(xt.mean().item(),xt.var().item())
-    axes[1].plot(xt.detach().cpu().reshape(-1))
+    print(xt.mean(dim=-1),xt.var(dim=-1))
+    for i in range(xt.shape[0]):
+        axes[1].plot(xt[i].detach().cpu().reshape(-1))
     axes[1].set_title('predict')
-    axes[2].plot(xt.detach().cpu().reshape(-1))
+    # axes[2].plot(xt.detach().cpu().reshape(-1))
     plt.show()
